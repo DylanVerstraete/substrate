@@ -46,7 +46,7 @@ use sc_consensus_slots::{
 use sc_telemetry::TelemetryHandle;
 use sp_api::ProvideRuntimeApi;
 use sp_application_crypto::{AppKey, AppPublic};
-use sp_blockchain::{HeaderBackend, Result as CResult};
+use sp_blockchain::{Result as CResult, well_known_cache_keys, ProvideCache, HeaderBackend};
 use sp_consensus::{BlockOrigin, Environment, Error as ConsensusError, Proposer, SelectChain};
 use sp_consensus_slots::Slot;
 use sp_core::crypto::{ByteArray, Pair, Public};
@@ -543,9 +543,13 @@ where
 	C::Api: AuraApi<B, A>,
 {
 	client
-		.runtime_api()
-		.authorities(at)
-		.ok()
+		.cache()
+		.and_then(|cache| cache
+			.get_at(&well_known_cache_keys::AUTHORITIES, at)
+			.unwrap_or(None)
+			.and_then(|(_, _, v)| Decode::decode(&mut &v[..]).ok())
+		)
+		.or_else(|| AuraApi::authorities(&*client.runtime_api(), at).ok())
 		.ok_or(sp_consensus::Error::InvalidAuthoritiesSet)
 }
 
