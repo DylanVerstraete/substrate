@@ -83,6 +83,8 @@ where
 		let expected_author =
 			slot_author::<P>(slot, authorities).ok_or(Error::SlotAuthorNotFound)?;
 
+		info!("expected author: {:?}", expected_author.clone());
+
 		let pre_hash = header.hash();
 
 		if P::verify(&sig, pre_hash.as_ref(), expected_author) {
