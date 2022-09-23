@@ -166,7 +166,7 @@ where
 	P::Public: AppPublic + Hash + Member + Encode + Decode,
 	P::Signature: TryFrom<Vec<u8>> + Hash + Member + Encode + Decode,
 	B: BlockT,
-	C: ProvideRuntimeApi<B> + BlockOf + AuxStore + HeaderBackend<B> + Send + Sync,
+	C: ProvideRuntimeApi<B> + BlockOf + AuxStore + HeaderBackend<B> + Send + Sync + ProvideCache<B>,
 	C::Api: AuraApi<B, AuthorityId<P>>,
 	SC: SelectChain<B>,
 	I: BlockImport<B, Transaction = sp_api::TransactionFor<C, B>> + Send + Sync + 'static,
@@ -261,7 +261,7 @@ pub fn build_aura_worker<P, B, C, PF, I, SO, L, BS, Error>(
 >
 where
 	B: BlockT,
-	C: ProvideRuntimeApi<B> + BlockOf + AuxStore + HeaderBackend<B> + Send + Sync,
+	C: ProvideRuntimeApi<B> + BlockOf + AuxStore + HeaderBackend<B> + Send + Sync + ProvideCache<B>,
 	C::Api: AuraApi<B, AuthorityId<P>>,
 	PF: Environment<B, Error = Error> + Send + Sync + 'static,
 	PF::Proposer: Proposer<B, Error = Error, Transaction = sp_api::TransactionFor<C, B>>,
@@ -310,7 +310,7 @@ impl<B, C, E, I, P, Error, SO, L, BS> sc_consensus_slots::SimpleSlotWorker<B>
 	for AuraWorker<C, E, I, P, SO, L, BS>
 where
 	B: BlockT,
-	C: ProvideRuntimeApi<B> + BlockOf + HeaderBackend<B> + Sync,
+	C: ProvideRuntimeApi<B> + BlockOf + HeaderBackend<B> + Sync + ProvideCache<B>,
 	C::Api: AuraApi<B, AuthorityId<P>>,
 	E: Environment<B, Error = Error> + Send + Sync,
 	E::Proposer: Proposer<B, Error = Error, Transaction = sp_api::TransactionFor<C, B>>,
@@ -539,7 +539,7 @@ fn authorities<A, B, C>(client: &C, at: &BlockId<B>) -> Result<Vec<A>, Consensus
 where
 	A: Codec + Debug,
 	B: BlockT,
-	C: ProvideRuntimeApi<B> + BlockOf,
+	C: ProvideRuntimeApi<B> + BlockOf + ProvideCache<B>,
 	C::Api: AuraApi<B, A>,
 {
 	client

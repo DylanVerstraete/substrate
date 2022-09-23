@@ -174,7 +174,12 @@ where
 #[async_trait::async_trait]
 impl<B: BlockT, C, P, CIDP> Verifier<B> for AuraVerifier<C, P, CIDP>
 where
-	C: ProvideRuntimeApi<B> + Send + Sync + sc_client_api::backend::AuxStore + BlockOf,
+	C: ProvideRuntimeApi<B>
+		+ Send
+		+ Sync
+		+ sc_client_api::backend::AuxStore
+		+ BlockOf
+		+ ProvideCache<B>,
 	C::Api: BlockBuilderApi<B> + AuraApi<B, AuthorityId<P>> + ApiExt<B>,
 	P: Pair + Send + Sync + 'static,
 	P::Public: Send + Sync + Hash + Eq + Clone + Decode + Encode + Debug + 'static,
@@ -407,7 +412,8 @@ where
 		+ Sync
 		+ AuxStore
 		+ UsageProvider<Block>
-		+ HeaderBackend<Block>,
+		+ HeaderBackend<Block>
+		+ ProvideCache<Block>,
 	I: BlockImport<Block, Error = ConsensusError, Transaction = sp_api::TransactionFor<C, Block>>
 		+ Send
 		+ Sync
