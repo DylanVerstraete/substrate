@@ -186,6 +186,7 @@ where
 	}
 }
 
+use sp_api::Core;
 #[async_trait::async_trait]
 impl<B: BlockT, C, P, CAW, CIDP> Verifier<B> for AuraVerifier<C, P, CAW, CIDP>
 where
