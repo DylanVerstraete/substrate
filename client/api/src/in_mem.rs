@@ -19,7 +19,7 @@
 //! In memory client backend
 
 use parking_lot::RwLock;
-use sp_blockchain::{CachedHeaderMetadata, HeaderMetadata};
+use sp_blockchain::{CachedHeaderMetadata, HeaderMetadata, ProvideCache};
 use sp_core::{
 	offchain::storage::InMemOffchainStorage as OffchainStorage, storage::well_known_keys,
 };
@@ -198,7 +198,7 @@ impl<Block: BlockT> Blockchain<Block> {
 	pub fn equals_to(&self, other: &Self) -> bool {
 		// Check ptr equality first to avoid double read locks.
 		if ptr::eq(self, other) {
-			return true
+			return true;
 		}
 		self.canon_equals_to(other) && self.storage.read().blocks == other.storage.read().blocks
 	}
@@ -207,14 +207,14 @@ impl<Block: BlockT> Blockchain<Block> {
 	pub fn canon_equals_to(&self, other: &Self) -> bool {
 		// Check ptr equality first to avoid double read locks.
 		if ptr::eq(self, other) {
-			return true
+			return true;
 		}
 		let this = self.storage.read();
 		let other = other.storage.read();
-		this.hashes == other.hashes &&
-			this.best_hash == other.best_hash &&
-			this.best_number == other.best_number &&
-			this.genesis_hash == other.genesis_hash
+		this.hashes == other.hashes
+			&& this.best_hash == other.best_hash
+			&& this.best_number == other.best_number
+			&& this.genesis_hash == other.genesis_hash
 	}
 
 	/// Insert header CHT root.
@@ -319,7 +319,7 @@ impl<Block: BlockT> Blockchain<Block> {
 			if !stored_justifications.append(justification) {
 				return Err(sp_blockchain::Error::BadJustification(
 					"Duplicate consensus engine ID".into(),
-				))
+				));
 			}
 		} else {
 			*block_justifications = Some(Justifications::from(justification));
@@ -432,6 +432,10 @@ impl<Block: BlockT> blockchain::Backend<Block> for Blockchain<Block> {
 		Ok(self.storage.read().finalized_hash)
 	}
 
+	fn cache(&self) -> Option<Arc<dyn blockchain::Cache<Block>>> {
+		None
+	}
+
 	fn leaves(&self) -> sp_blockchain::Result<Vec<Block::Hash>> {
 		Ok(self.storage.read().leaves.hashes())
 	}
@@ -463,6 +467,12 @@ impl<Block: BlockT> blockchain::Backend<Block> for Blockchain<Block> {
 		_id: BlockId<Block>,
 	) -> sp_blockchain::Result<Option<Vec<Vec<u8>>>> {
 		unimplemented!("Not supported by the in-mem backend.")
+	}
+}
+
+impl<Block: BlockT> ProvideCache<Block> for Blockchain<Block> {
+	fn cache(&self) -> Option<Arc<dyn blockchain::Cache<Block>>> {
+		None
 	}
 }
 
@@ -806,7 +816,7 @@ impl<Block: BlockT> backend::LocalBackend<Block> for Backend<Block> where Block:
 /// Check that genesis storage is valid.
 pub fn check_genesis_storage(storage: &Storage) -> sp_blockchain::Result<()> {
 	if storage.top.iter().any(|(k, _)| well_known_keys::is_child_storage_key(k)) {
-		return Err(sp_blockchain::Error::InvalidState)
+		return Err(sp_blockchain::Error::InvalidState);
 	}
 
 	if storage
@@ -814,7 +824,7 @@ pub fn check_genesis_storage(storage: &Storage) -> sp_blockchain::Result<()> {
 		.keys()
 		.any(|child_key| !well_known_keys::is_child_storage_key(child_key))
 	{
-		return Err(sp_blockchain::Error::InvalidState)
+		return Err(sp_blockchain::Error::InvalidState);
 	}
 
 	Ok(())
