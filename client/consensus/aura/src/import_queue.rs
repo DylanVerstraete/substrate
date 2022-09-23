@@ -212,7 +212,7 @@ where
 		let authorities = authorities(self.client.as_ref(), &BlockId::Hash(hash))
 			.map_err(|e| format!("Could not fetch authorities at {:?}: {}", parent_hash, e))?;
 
-		info!("authorities {:?}, at block: {:?}", authorities.clone(), parent_hash);
+		info!("authorities {:?}, at block: {:?}", authorities.clone(), hash);
 		let create_inherent_data_providers = self
 			.create_inherent_data_providers
 			.create_inherent_data_providers(parent_hash, ())
