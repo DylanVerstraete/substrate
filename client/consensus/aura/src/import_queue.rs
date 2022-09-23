@@ -171,6 +171,7 @@ where
 	}
 }
 
+use sp_api::Core;
 #[async_trait::async_trait]
 impl<B: BlockT, C, P, CIDP> Verifier<B> for AuraVerifier<C, P, CIDP>
 where
@@ -188,7 +189,10 @@ where
 	) -> Result<(BlockImportParams<B, ()>, Option<Vec<(CacheKeyId, Vec<u8>)>>), String> {
 		let hash = block.header.hash();
 		let parent_hash = *block.header.parent_hash();
-		// let parent_header = *block.
+		self.client
+			.runtime_api()
+			.initialize_block(&BlockId::Hash(hash), &block.header)
+			.ok();
 		let authorities = authorities(self.client.as_ref(), &BlockId::Hash(hash))
 			.map_err(|e| format!("Could not fetch authorities at {:?}: {}", parent_hash, e))?;
 
