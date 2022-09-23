@@ -209,7 +209,7 @@ where
 			.runtime_api()
 			.initialize_block(&BlockId::Hash(hash), &block.header)
 			.ok();
-		let authorities = authorities(self.client.as_ref(), &BlockId::Hash(parent_hash))
+		let authorities = authorities(self.client.as_ref(), &BlockId::Hash(hash))
 			.map_err(|e| format!("Could not fetch authorities at {:?}: {}", parent_hash, e))?;
 
 		info!("authorities {:?}, at block: {:?}", authorities.clone(), parent_hash);
