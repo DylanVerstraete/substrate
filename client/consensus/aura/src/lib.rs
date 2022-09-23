@@ -89,7 +89,7 @@ where
 /// Get slot author for given block along with authorities.
 fn slot_author<P: Pair>(slot: Slot, authorities: &[AuthorityId<P>]) -> Option<&AuthorityId<P>> {
 	if authorities.is_empty() {
-		return None
+		return None;
 	}
 
 	let idx = *slot % (authorities.len() as u64);
@@ -435,7 +435,7 @@ where
 					self.client.info().finalized_number,
 					slot,
 					self.logging_target(),
-				)
+				);
 			}
 		}
 		false
@@ -520,7 +520,7 @@ impl<B: BlockT> From<Error<B>> for String {
 /// Get pre-digests from the header
 pub fn find_pre_digest<B: BlockT, Signature: Codec>(header: &B::Header) -> Result<Slot, Error<B>> {
 	if header.number().is_zero() {
-		return Ok(0.into())
+		return Ok(0.into());
 	}
 
 	let mut pre_digest: Option<Slot> = None;
@@ -535,6 +535,7 @@ pub fn find_pre_digest<B: BlockT, Signature: Codec>(header: &B::Header) -> Resul
 	pre_digest.ok_or_else(|| aura_err(Error::NoDigestFound))
 }
 
+// use sp_api::Core;
 fn authorities<A, B, C>(client: &C, at: &BlockId<B>) -> Result<Vec<A>, ConsensusError>
 where
 	A: Codec + Debug,
@@ -542,9 +543,9 @@ where
 	C: ProvideRuntimeApi<B> + BlockOf,
 	C::Api: AuraApi<B, A>,
 {
+	// client.runtime_api().initialize_block(at).ok();
 	client
 		.runtime_api()
-    	.initialize_block()
 		.authorities(at)
 		.ok()
 		.ok_or(sp_consensus::Error::InvalidAuthoritiesSet)
