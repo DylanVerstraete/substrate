@@ -33,7 +33,7 @@ use sp_api::{ApiExt, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder as BlockBuilderApi;
 use sp_blockchain::{
 	well_known_cache_keys::{self, Id as CacheKeyId},
-	HeaderBackend,
+	HeaderBackend, ProvideCache,
 };
 use sp_consensus::Error as ConsensusError;
 use sp_consensus_aura::{
@@ -227,8 +227,9 @@ where
 
 					// skip the inherents verification if the runtime API is old or not expected to
 					// exist.
-					if !block.state_action.skip_execution_checks() &&
-						self.client
+					if !block.state_action.skip_execution_checks()
+						&& self
+							.client
 							.runtime_api()
 							.has_api_with::<dyn BlockBuilderApi<B>, _>(
 								&BlockId::Hash(parent_hash),
@@ -270,8 +271,9 @@ where
 						))
 					})
 					.find_map(|l| match l {
-						ConsensusLog::AuthoritiesChange(a) =>
-							Some(vec![(well_known_cache_keys::AUTHORITIES, a.encode())]),
+						ConsensusLog::AuthoritiesChange(a) => {
+							Some(vec![(well_known_cache_keys::AUTHORITIES, a.encode())])
+						},
 						_ => None,
 					});
 
@@ -298,7 +300,8 @@ where
 	}
 }
 
-fn initialize_authorities_cache<A, B, C>(client: &C) -> Result<(), ConsensusError> where
+fn initialize_authorities_cache<A, B, C>(client: &C) -> Result<(), ConsensusError>
+where
 	A: Codec + Debug,
 	B: BlockT,
 	C: ProvideRuntimeApi<B> + BlockOf + ProvideCache<B> + UsageProvider<B>,
@@ -313,11 +316,12 @@ fn initialize_authorities_cache<A, B, C>(client: &C) -> Result<(), ConsensusErro
 	let best_hash = client.usage_info().chain.best_hash;
 
 	// check if we already have initialized the cache
-	let map_err = |error| sp_consensus::Error::from(sp_consensus::Error::ClientImport(
-		format!(
+	let map_err = |error| {
+		sp_consensus::Error::from(sp_consensus::Error::ClientImport(format!(
 			"Error initializing authorities cache: {}",
 			error,
-		)));
+		)))
+	};
 
 	let block_id = BlockId::hash(best_hash);
 	let authorities: Option<Vec<A>> = cache
@@ -329,7 +333,8 @@ fn initialize_authorities_cache<A, B, C>(client: &C) -> Result<(), ConsensusErro
 	}
 
 	let authorities = crate::authorities(client, &block_id)?;
-	cache.initialize(&well_known_cache_keys::AUTHORITIES, authorities.encode())
+	cache
+		.initialize(&well_known_cache_keys::AUTHORITIES, authorities.encode())
 		.map_err(map_err)?;
 
 	Ok(())

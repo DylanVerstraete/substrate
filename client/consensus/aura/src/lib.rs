@@ -46,7 +46,7 @@ use sc_consensus_slots::{
 use sc_telemetry::TelemetryHandle;
 use sp_api::ProvideRuntimeApi;
 use sp_application_crypto::{AppKey, AppPublic};
-use sp_blockchain::{Result as CResult, well_known_cache_keys, ProvideCache, HeaderBackend};
+use sp_blockchain::{well_known_cache_keys, HeaderBackend, ProvideCache, Result as CResult};
 use sp_consensus::{BlockOrigin, Environment, Error as ConsensusError, Proposer, SelectChain};
 use sp_consensus_slots::Slot;
 use sp_core::crypto::{ByteArray, Pair, Public};
@@ -89,7 +89,7 @@ where
 /// Get slot author for given block along with authorities.
 fn slot_author<P: Pair>(slot: Slot, authorities: &[AuthorityId<P>]) -> Option<&AuthorityId<P>> {
 	if authorities.is_empty() {
-		return None
+		return None;
 	}
 
 	let idx = *slot % (authorities.len() as u64);
@@ -435,7 +435,7 @@ where
 					self.client.info().finalized_number,
 					slot,
 					self.logging_target(),
-				)
+				);
 			}
 		}
 		false
@@ -520,7 +520,7 @@ impl<B: BlockT> From<Error<B>> for String {
 /// Get pre-digests from the header
 pub fn find_pre_digest<B: BlockT, Signature: Codec>(header: &B::Header) -> Result<Slot, Error<B>> {
 	if header.number().is_zero() {
-		return Ok(0.into())
+		return Ok(0.into());
 	}
 
 	let mut pre_digest: Option<Slot> = None;
@@ -544,11 +544,12 @@ where
 {
 	client
 		.cache()
-		.and_then(|cache| cache
-			.get_at(&well_known_cache_keys::AUTHORITIES, at)
-			.unwrap_or(None)
-			.and_then(|(_, _, v)| Decode::decode(&mut &v[..]).ok())
-		)
+		.and_then(|cache| {
+			cache
+				.get_at(&well_known_cache_keys::AUTHORITIES, at)
+				.unwrap_or(None)
+				.and_then(|(_, _, v)| Decode::decode(&mut &v[..]).ok())
+		})
 		.or_else(|| AuraApi::authorities(&*client.runtime_api(), at).ok())
 		.ok_or(sp_consensus::Error::InvalidAuthoritiesSet)
 }
