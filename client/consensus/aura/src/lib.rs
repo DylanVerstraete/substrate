@@ -544,6 +544,7 @@ where
 {
 	client
 		.runtime_api()
+    	.initialize_block()
 		.authorities(at)
 		.ok()
 		.ok_or(sp_consensus::Error::InvalidAuthoritiesSet)
